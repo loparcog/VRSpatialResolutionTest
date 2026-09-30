@@ -13,7 +13,7 @@ public class LogController
     private string UUID;
     // Debug flag
     private bool debug;
-    private int eyeLeft, eyeRight, glasses;
+    private double eyeLeft, eyeRight, glasses;
     // Store all final line sizes
     // Horizontal Inf, Vertical Inf, Diagonal Inf, Horizontal E, Vertical E, Diagonal E
     private float[] staticLines;
@@ -60,14 +60,14 @@ public class LogController
         Debug.Log("Data being saved to: " + Application.persistentDataPath + "/" + Constants.LOGFILE);
     }
 
-    public void LogUserData(int leftEye, int rightEye, int hasGlasses)
+    public void LogUserData(double leftEye, double rightEye, double hasGlasses)
     {
         // Store passed data into the logger
         eyeLeft = leftEye;
         eyeRight = rightEye;
         glasses = hasGlasses;
 
-        if (debug) { Debug.Log(string.Join(" ", "ELeft:", eyeLeft, "ERight:", eyeRight, "Glasses:", glasses)); }
+        if (debug) { Debug.Log(string.Join(" ", "ELeft:", eyeLeft.ToString("F1"), "ERight:", eyeRight.ToString("F1"), "Glasses:", glasses.ToString("F0"))); }
     }
 
     public void LogLineData(float lineScale, Constants.LINE_TYPE LT, Constants.LINE_ORIENTATION LO, bool isDynamic = false)

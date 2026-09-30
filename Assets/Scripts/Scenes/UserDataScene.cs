@@ -8,9 +8,9 @@ public class UserDataScene : SceneBasis
     private TextMeshPro eyeAcuityText;
     private TextMeshPro eyeDataText;
     // Stores visual acuity for left eye, right eye, and glasses state, respectively
-    private int[] eyeVal = { 20, 20, 0};
+    private double[] eyeVal = { 0, 0, 0};
     // Possible values of the LogMAR chart used
-    private int[] eyeTestScores = { 20, 25, 32, 40, 50, 63, 80, 100, 200 };
+    private double[] eyeTestScores = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 };
     private int[] eyeTestLR = { 0, 0 };
     // LEFT = 0, RIGHT = 1, GLASSES = 2
     private int currSelection = 0;
@@ -52,20 +52,20 @@ public class UserDataScene : SceneBasis
         {
             case 0:
                 // Left eye
-                eyeAcuityText.text = "<color=yellow>Left Eye: 20/" + eyeVal[0] + "\n</color>" +
-                    "Right Eye: 20/" + eyeVal[1] + "\n";
+                eyeAcuityText.text = "<color=yellow>Left Eye (LogMAR): " + eyeVal[0].ToString("F1") + "\n</color>" +
+                    "Right Eye (LogMAR): " + eyeVal[1].ToString("F1") + "\n";
                 eyeDataText.text = "Glasses: " + (eyeVal[2] == 0 ? "No" : "Yes");
                 break;
             case 1:
                 // Right eye
-                eyeAcuityText.text = "Left Eye: 20/" + eyeVal[0] + "\n" +
-                    "<color=yellow>Right Eye: 20/" + eyeVal[1] + "\n</color>";
+                eyeAcuityText.text = "Left Eye (LogMAR): " + eyeVal[0].ToString("F1") + "\n" +
+                    "<color=yellow>Right Eye (LogMAR): " + eyeVal[1].ToString("F1") + "\n</color>";
                 eyeDataText.text = "Glasses: " + (eyeVal[2] == 0 ? "No" : "Yes");
                 break;
             case 2:
                 // Glasses
-                eyeAcuityText.text = "Left Eye: 20/" + eyeVal[0] + "\n" +
-                    "Right Eye: 20/" + eyeVal[1] + "\n";
+                eyeAcuityText.text = "Left Eye (LogMAR): " + eyeVal[0].ToString("F1") + "\n" +
+                    "Right Eye (LogMAR): " + eyeVal[1].ToString("F1") + "\n";
                 eyeDataText.text = "<color=yellow>Glasses: " + (eyeVal[2] == 0 ? "No" : "Yes") + "</color>";
                 break;
 
