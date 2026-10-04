@@ -93,8 +93,8 @@ public class LogController
         {
             // Write all formatted data to the line
             // EYE DATA
-            sw.Write(UUID + ",20/" + eyeLeft +
-                ",20/" + eyeRight +
+            sw.Write(UUID + "," + eyeLeft +
+                "," + eyeRight +
                 "," + glasses);
             // STATIC TESTING
             for (int i = 0; i < staticLines.Length; i++)
