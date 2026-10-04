@@ -20,7 +20,7 @@ public class TutorialScene : SceneBasis
         testLinePair = activeScene.AddComponent<LinePair>();
         // Use the default line size
         testLinePair.MakeLines("DEFAULT", 0.5f);
-        testLinePair.lines.transform.position = new Vector3(12, 0, 4);
+        testLinePair.lines.transform.position = new Vector3(14, 0, 4);
         // Colour the controller
     }
     public override void RegisterControls()
