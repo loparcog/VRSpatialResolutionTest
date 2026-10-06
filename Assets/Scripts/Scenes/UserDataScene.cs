@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,10 +12,13 @@ public class UserDataScene : SceneBasis
     // Stores visual acuity for left eye, right eye, and glasses state, respectively
     private double[] eyeVal = { 0, 0, 0};
     // Possible values of the LogMAR chart used
-    private double[] eyeTestScores = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 };
+    private List<double> eyeTestScores = new List<double>();
     private int[] eyeTestLR = { 0, 0 };
     // LEFT = 0, RIGHT = 1, GLASSES = 2
     private int currSelection = 0;
+    // Holding for easier eye test scores
+    private float[] UpDownTime = { 0, 0 };
+    private bool[] UpDownHeld = { false, false };
     // Logger reference
     LogController log;
     
@@ -31,6 +36,18 @@ public class UserDataScene : SceneBasis
         var uuidText = GameObject.Find("UUID").GetComponent<TextMeshPro>().text = UUID;
         eyeAcuityText = GameObject.Find("Eye Acuity").GetComponent<TextMeshPro>();
         eyeDataText = GameObject.Find("Eye Data").GetComponent<TextMeshPro>();
+        // Populate eye test scores
+        // First row difference
+        eyeTestScores.AddRange(new List<double>{2.00, 1.75, 1.50, 1.25});
+        // All following rows
+        for (double x = 1.00; x > -0.01; x -= 0.02)
+        {
+            eyeTestScores.Add(x);
+        }
+        // Set default eye values
+        eyeVal[0] = eyeTestScores[eyeTestLR[0]];
+        eyeVal[1] = eyeTestScores[eyeTestLR[1]];
+        // Draw default lines
         WriteEyeText();
     }
 
@@ -41,8 +58,10 @@ public class UserDataScene : SceneBasis
         controllerButtons[(int)Constants.CONTROLS.BUTTON].action.performed += ToggleDestroyFlag;
         controllerButtons[(int)Constants.CONTROLS.TRIGGER].action.performed += SwapEyeIndex;
         // Change prescription numbers with joysticks
-        controllerButtons[(int)Constants.CONTROLS.UP].action.performed += EyeValueUp;
-        controllerButtons[(int)Constants.CONTROLS.DOWN].action.performed += EyeValueDown;
+        controllerButtons[(int)Constants.CONTROLS.UP].action.performed += ToggleUp;
+        controllerButtons[(int)Constants.CONTROLS.DOWN].action.performed += ToggleDown;
+        controllerButtons[(int)Constants.CONTROLS.UP].action.canceled += ToggleUp;
+        controllerButtons[(int)Constants.CONTROLS.DOWN].action.canceled += ToggleDown;
     }
     private void WriteEyeText()
     {
@@ -52,20 +71,20 @@ public class UserDataScene : SceneBasis
         {
             case 0:
                 // Left eye
-                eyeAcuityText.text = "<color=yellow>Left Eye (LogMAR): " + eyeVal[0].ToString("F1") + "\n</color>" +
-                    "Right Eye (LogMAR): " + eyeVal[1].ToString("F1") + "\n";
+                eyeAcuityText.text = "<color=yellow>Left Eye (LogMAR): " + eyeVal[0].ToString("F2") + "\n</color>" +
+                    "Right Eye (LogMAR): " + eyeVal[1].ToString("F2") + "\n";
                 eyeDataText.text = "Glasses: " + (eyeVal[2] == 0 ? "No" : "Yes");
                 break;
             case 1:
                 // Right eye
-                eyeAcuityText.text = "Left Eye (LogMAR): " + eyeVal[0].ToString("F1") + "\n" +
-                    "<color=yellow>Right Eye (LogMAR): " + eyeVal[1].ToString("F1") + "\n</color>";
+                eyeAcuityText.text = "Left Eye (LogMAR): " + eyeVal[0].ToString("F2") + "\n" +
+                    "<color=yellow>Right Eye (LogMAR): " + eyeVal[1].ToString("F2") + "\n</color>";
                 eyeDataText.text = "Glasses: " + (eyeVal[2] == 0 ? "No" : "Yes");
                 break;
             case 2:
                 // Glasses
-                eyeAcuityText.text = "Left Eye (LogMAR): " + eyeVal[0].ToString("F1") + "\n" +
-                    "Right Eye (LogMAR): " + eyeVal[1].ToString("F1") + "\n";
+                eyeAcuityText.text = "Left Eye (LogMAR): " + eyeVal[0].ToString("F2") + "\n" +
+                    "Right Eye (LogMAR): " + eyeVal[1].ToString("F2") + "\n";
                 eyeDataText.text = "<color=yellow>Glasses: " + (eyeVal[2] == 0 ? "No" : "Yes") + "</color>";
                 break;
 
@@ -78,7 +97,7 @@ public class UserDataScene : SceneBasis
         currSelection %= eyeVal.Length;
         WriteEyeText();
     }
-    private void EyeValueUp(InputAction.CallbackContext context)
+    private void EyeValueDown()
     {
         if (currSelection == 2)
         {
@@ -89,9 +108,10 @@ public class UserDataScene : SceneBasis
         {
             // Eye test, update depending on left or right!
             eyeTestLR[currSelection] += 1;
-            if (eyeTestLR[currSelection] == eyeTestScores.Length)
+            // Prevent going over limits
+            if (eyeTestLR[currSelection] == eyeTestScores.Count)
             {
-                eyeTestLR[currSelection] = eyeTestScores.Length - 1;
+                eyeTestLR[currSelection] = eyeTestScores.Count - 1;
             }
             eyeVal[currSelection] = eyeTestScores[eyeTestLR[currSelection]];
         }
@@ -99,7 +119,7 @@ public class UserDataScene : SceneBasis
         WriteEyeText();
     }
 
-    private void EyeValueDown(InputAction.CallbackContext context)
+    private void EyeValueUp()
     {
         if (currSelection == 2)
         {
@@ -109,6 +129,7 @@ public class UserDataScene : SceneBasis
         else
         {
             eyeTestLR[currSelection] -= 1;
+            // Prevent going over limits
             if (eyeTestLR[currSelection] < 0)
             {
                 eyeTestLR[currSelection] = 0;
@@ -119,6 +140,66 @@ public class UserDataScene : SceneBasis
         WriteEyeText();
     }
 
+
+    private void ToggleUp(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            // Perform the action
+            EyeValueUp();
+            // Toggle hold
+            UpDownHeld[0] = true;
+        }
+        else if (context.canceled)
+        {
+            // Reset counters
+            UpDownHeld[0] = false;
+            UpDownTime[0] = 0;
+        }
+    }
+
+    private void ToggleDown(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            EyeValueDown();
+            UpDownHeld[1] = true;
+        }
+        else if (context.canceled)
+        {
+            // Reset counters
+            UpDownHeld[1] = false;
+            UpDownTime[1] = 0;
+        }        
+    }
+
+    public override void Update()
+    {
+        // Check for held values
+        // UP
+        if (UpDownHeld[0])
+        {
+            // Add delta time (done in seconds)
+            UpDownTime[0] += Time.deltaTime;
+            if (UpDownTime[0] > 0.5)
+            {
+                // Repeatedly increase size
+                EyeValueUp();
+            }
+        }
+        // DOWN
+        else if (UpDownHeld[1])
+        {
+            // Add delta time (done in seconds)
+            UpDownTime[1] += Time.deltaTime;
+            if (UpDownTime[1] > 0.5)
+            {
+                // Repeatedly increase size
+                EyeValueDown();
+            }
+        }
+    }
+
     public override void DeregisterControls()
     {
         base.DeregisterControls();
@@ -126,8 +207,10 @@ public class UserDataScene : SceneBasis
         controllerButtons[(int)Constants.CONTROLS.BUTTON].action.performed -= ToggleDestroyFlag;
         controllerButtons[(int)Constants.CONTROLS.TRIGGER].action.performed -= SwapEyeIndex;
         // Change prescription numbers with joysticks
-        controllerButtons[(int)Constants.CONTROLS.UP].action.performed -= EyeValueUp;
-        controllerButtons[(int)Constants.CONTROLS.DOWN].action.performed -= EyeValueDown;
+        controllerButtons[(int)Constants.CONTROLS.UP].action.performed -= ToggleUp;
+        controllerButtons[(int)Constants.CONTROLS.DOWN].action.performed -= ToggleDown;
+        controllerButtons[(int)Constants.CONTROLS.UP].action.canceled -= ToggleUp;
+        controllerButtons[(int)Constants.CONTROLS.DOWN].action.canceled -= ToggleDown;
     }
 
     public override void Destroy()

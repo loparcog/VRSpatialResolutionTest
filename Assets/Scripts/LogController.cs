@@ -67,7 +67,7 @@ public class LogController
         eyeRight = rightEye;
         glasses = hasGlasses;
 
-        if (debug) { Debug.Log(string.Join(" ", "ELeft:", eyeLeft.ToString("F1"), "ERight:", eyeRight.ToString("F1"), "Glasses:", glasses.ToString("F0"))); }
+        if (debug) { Debug.Log(string.Join(" ", "ELeft:", eyeLeft.ToString("F2"), "ERight:", eyeRight.ToString("F2"), "Glasses:", glasses.ToString("F0"))); }
     }
 
     public void LogLineData(float lineScale, Constants.LINE_TYPE LT, Constants.LINE_ORIENTATION LO, bool isDynamic = false)
